@@ -3,6 +3,8 @@ package hexlet.code.component;
 
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.mapper.UserMapper;
+import hexlet.code.model.TaskStatus;
+import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class DataInitializer implements ApplicationRunner {
     @Autowired
     private final UserMapper userMapper;
 
+    @Autowired
+    private final TaskStatusRepository taskStatusRepository;
+
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -30,5 +35,24 @@ public class DataInitializer implements ApplicationRunner {
         userData.setPassword("123");
         var user = userMapper.map(userData);
         userRepository.save(user);
+        String[][] defaultStatuses = {
+                {"Draft", "draft"},
+                {"To Review", "to_review"},
+                {"To Be Fixed", "to_be_fixed"},
+                {"To Publish", "to_publish"},
+                {"Published", "published"}
+        };
+
+        for (String[] statusData : defaultStatuses) {
+            String name = statusData[0];
+            String slug = statusData[1];
+            if (taskStatusRepository.findBySlug(slug).isEmpty()) {
+                TaskStatus status = new TaskStatus();
+                status.setName(name);
+                status.setSlug(slug);
+                taskStatusRepository.save(status);
+            }
+        }
+
     }
 }

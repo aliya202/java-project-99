@@ -3,7 +3,7 @@ package hexlet.code.mapper;
 
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
-import hexlet.code.dto.UserUpdateDto;
+import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.model.User;
 import org.mapstruct.BeforeMapping;
 import org.mapstruct.Mapper;
@@ -30,7 +30,7 @@ public abstract class UserMapper {
 
     public abstract UserDTO map(User model);
 
-    public abstract void update(UserUpdateDto update, @MappingTarget User destination);
+    public abstract void update(UserUpdateDTO update, @MappingTarget User destination);
 
     @BeforeMapping
     public void encryptPassword(UserCreateDTO data) {

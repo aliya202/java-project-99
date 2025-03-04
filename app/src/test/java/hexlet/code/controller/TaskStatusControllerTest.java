@@ -1,12 +1,12 @@
 package hexlet.code.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hexlet.code.dto.UserCreateDTO;
-import hexlet.code.dto.UserDTO;
-import hexlet.code.dto.UserUpdateDTO;
-import hexlet.code.mapper.UserMapper;
-import hexlet.code.model.User;
-import hexlet.code.repository.UserRepository;
+import hexlet.code.dto.TaskStatusCreateDTO;
+import hexlet.code.dto.TaskStatusDTO;
+import hexlet.code.dto.TaskStatusUpdateDTO;
+import hexlet.code.mapper.TaskStatusMapper;
+import hexlet.code.model.TaskStatus;
+import hexlet.code.repository.TaskStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-class UsersControllerTest {
+class TaskStatusControllerTest {
 
     @Autowired
     private WebApplicationContext wac;
@@ -43,12 +43,12 @@ class UsersControllerTest {
     private ObjectMapper om;
 
     @Autowired
-    private UserRepository userRepository;
+    private TaskStatusRepository taskStatusRepository;
 
     @Autowired
-    private UserMapper userMapper;
+    private TaskStatusMapper taskStatusMapper;
 
-    private User testUser;
+    private TaskStatus taskStatus;
 
     @BeforeEach
     public void setUp() {
@@ -56,20 +56,18 @@ class UsersControllerTest {
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .build();
-        userRepository.deleteAll();
+        taskStatusRepository.deleteAll();
 
-        testUser = new User();
-        testUser.setFirstName("Test");
-        testUser.setLastName("User");
-        testUser.setEmail("test@example.com");
+        taskStatus = new TaskStatus();
+        taskStatus.setName("ToReview");
+        taskStatus.setSlug("to_review");
 
-        testUser.setPasswordDigest("$2a$10$DummyHashedPasswordValue");
-        userRepository.save(testUser);
+        taskStatusRepository.save(taskStatus);
     }
 
     @Test
     public void testIndex() throws Exception {
-        var result = mockMvc.perform(get("/api/users")
+        var result = mockMvc.perform(get("/api/task_statuses")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -79,54 +77,49 @@ class UsersControllerTest {
 
     @Test
     public void testShow() throws Exception {
-        var result = mockMvc.perform(get("/api/users/{id}", testUser.getId())
+        var result = mockMvc.perform(get("/api/task_statuses/{id}", taskStatus.getId())
                         .with(SecurityMockMvcRequestPostProcessors.jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
         assertThatJson(body).and(
-                v -> v.node("firstName").isEqualTo(testUser.getFirstName()),
-                v -> v.node("lastName").isEqualTo(testUser.getLastName()),
-                v -> v.node("email").isEqualTo(testUser.getEmail())
+                v -> v.node("name").isEqualTo(taskStatus.getName()),
+                v -> v.node("slug").isEqualTo(taskStatus.getSlug())
         );
     }
 
     @Test
     public void testCreate() throws Exception {
-        UserCreateDTO createDTO = new UserCreateDTO();
-        createDTO.setFirstName("Alice");
-        createDTO.setLastName("Wonderland");
-        createDTO.setEmail("alice@example.com");
-        createDTO.setPassword("secret-password");
+        TaskStatusCreateDTO createDTO = new TaskStatusCreateDTO();
+        createDTO.setName("Draft");
+        createDTO.setSlug("draft");
 
-        var request = post("/api/users")
+        var request = post("/api/task_statuses")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(createDTO));
+                .content(om.writeValueAsString(createDTO))
+                .with(SecurityMockMvcRequestPostProcessors.jwt());  // добавляем JWT для аутентификации
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isCreated())
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
-        UserDTO createdUser = om.readValue(body, UserDTO.class);
-        assertThat(createdUser.getFirstName()).isEqualTo(createDTO.getFirstName());
-        assertThat(createdUser.getLastName()).isEqualTo(createDTO.getLastName());
-        assertThat(createdUser.getEmail()).isEqualTo(createDTO.getEmail());
+        TaskStatusDTO taskStatusDTO = om.readValue(body, TaskStatusDTO.class);
+        assertThat(taskStatusDTO.getName()).isEqualTo(createDTO.getName());
+        assertThat(taskStatusDTO.getSlug()).isEqualTo(createDTO.getSlug());
 
-        var userOptional = userRepository.findByEmail(createDTO.getEmail());
-        assertThat(userOptional).isPresent();
-        var user = userOptional.get();
-        assertThat(user.getPasswordDigest()).isNotEqualTo(createDTO.getPassword());
+        var taskStatusOptional = taskStatusRepository.findBySlug(createDTO.getSlug());
+        assertThat(taskStatusOptional).isPresent();
     }
 
     @Test
     public void testUpdate() throws Exception {
-        UserUpdateDTO updateDTO = new UserUpdateDTO();
-        updateDTO.setFirstName("UpdatedName");
-        updateDTO.setLastName("UpdatedLastName");
+        TaskStatusUpdateDTO updateDTO = new TaskStatusUpdateDTO();
+        updateDTO.setName("ToReview");
+        updateDTO.setSlug("to_review");
 
 
-        var request = put("/api/users/{id}", testUser.getId())
+        var request = put("/api/task_statuses/{id}", taskStatus.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(updateDTO))
                 .with(SecurityMockMvcRequestPostProcessors.jwt());
@@ -136,31 +129,31 @@ class UsersControllerTest {
                 .andReturn();
         String body = result.getResponse().getContentAsString();
 
-        UserDTO updatedUser = om.readValue(body, UserDTO.class);
-        assertThat(updatedUser.getFirstName()).isEqualTo(updateDTO.getFirstName());
-        assertThat(updatedUser.getLastName()).isEqualTo(updateDTO.getLastName());
+        TaskStatusDTO updatedStatus = om.readValue(body, TaskStatusDTO.class);
+        assertThat(updatedStatus.getName()).isEqualTo(updateDTO.getName());
+        assertThat(updatedStatus.getSlug()).isEqualTo(updateDTO.getSlug());
     }
 
     @Test
     public void testDelete() throws Exception {
-        var request = delete("/api/users/{id}", testUser.getId())
+        var request = delete("/api/task_statuses/{id}", taskStatus.getId())
                 .with(SecurityMockMvcRequestPostProcessors.jwt());
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
 
-        var userOptional = userRepository.findByEmail(testUser.getEmail());
-        assertThat(userOptional).isEmpty();
+        var taskStatusOptional = taskStatusRepository.findBySlug(taskStatus.getSlug());
+        assertThat(taskStatusOptional).isEmpty();
     }
 
     @Test
     public void testIndexWithoutAuth() throws Exception {
-        mockMvc.perform(get("/api/users"))
+        mockMvc.perform(get("/api/task_statuses"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     public void testShowWithoutAuth() throws Exception {
-        mockMvc.perform(get("/api/users/{id}", testUser.getId()))
+        mockMvc.perform(get("/api/task_statuses/{id}", taskStatus.getId()))
                 .andExpect(status().isUnauthorized());
     }
 }

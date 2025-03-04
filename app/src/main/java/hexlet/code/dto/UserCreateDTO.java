@@ -11,7 +11,6 @@ import lombok.Setter;
 @Getter
 public class UserCreateDTO {
 
-    // Необязательные поля
     private String firstName;
     private String lastName;
 
@@ -19,7 +18,6 @@ public class UserCreateDTO {
     @NotBlank(message = "Email не должен быть пустым")
     private String email;
 
-    // Обязательное поле password, минимум 3 символа
     @Size(min = 3, max = 100, message = "Пароль должен содержать минимум 3 символа")
     @NotBlank(message = "Пароль не должен быть пустым")
     private String password;
