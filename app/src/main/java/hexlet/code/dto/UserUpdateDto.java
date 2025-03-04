@@ -6,4 +6,6 @@ import lombok.Setter;
 @Setter
 @Getter
 public class UserUpdateDto {
+    private String firstName;
+    private String lastName;
 }
