@@ -1,11 +1,15 @@
 package hexlet.code.controller;
 
+import hexlet.code.dto.UserCreateDTO;
+import hexlet.code.dto.UserDTO;
+import hexlet.code.dto.UserUpdateDto;
+import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,69 +22,58 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class UsersController {
 
     @Autowired
-    private UserRepository repository;
+    private UserRepository userRepository;
+    @Autowired
+    private UserMapper userMapper;
 
 
     @GetMapping("/users")
-    List<User> index() {
-        return repository.findAll();
+    List<UserDTO> index() {
+        var users = userRepository.findAll();
+        return users.stream()
+                .map(p -> userMapper.map(p))
+                .toList();
     }
 
     @GetMapping("/users/{id}")
     @ResponseStatus(HttpStatus.OK)
-    User show(@PathVariable Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Not Found"));
+    UserDTO show(@PathVariable Long id) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+        return userMapper.map(user);
     }
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    User create(@Valid @RequestBody User userData) {
-        userData.setPassword(hashPassword(userData.getPassword()));
-        repository.save(userData);
-        return userData;
+    UserDTO create(@Valid @RequestBody UserCreateDTO userData) {
+        var user = userMapper.map(userData);
+        userRepository.save(user);
+        return userMapper.map(user);
     }
 
     @PutMapping("/users/{id}")
     @ResponseStatus(HttpStatus.OK)
-    User update(@RequestBody Map<String, Object> updates, @PathVariable Long id) {
-        var user = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not Found"));
-        if (updates.containsKey("email")) {
-            user.setEmail((String) updates.get("email"));
-        }
-        if (updates.containsKey("firstName")) {
-            user.setFirstName((String) updates.get("firstName"));
-        }
-        if (updates.containsKey("lastName")) {
-            user.setLastName((String) updates.get("lastName"));
-        }
-        if (updates.containsKey("password")) {
-            user.setPassword(hashPassword((String) updates.get("password")));
-        }
-
-        repository.save(user);
-        return user;
+    UserDTO update(@RequestBody UserUpdateDto userData, @PathVariable Long id) {
+        var user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not Found"));
+        userMapper.update(userData, user);
+        userRepository.save(user);
+        var userDTO = userMapper.map(user);
+        return userDTO;
     }
 
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
-        User user = repository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not Found"));
-        repository.delete(user);
+        userRepository.delete(user);
     }
-
-    private String hashPassword(String password) {
-        return "hashed_" + password;
-    }
-
 
 }
