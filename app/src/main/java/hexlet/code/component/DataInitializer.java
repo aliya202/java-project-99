@@ -3,7 +3,9 @@ package hexlet.code.component;
 
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.mapper.UserMapper;
+import hexlet.code.model.Label;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -25,6 +27,8 @@ public class DataInitializer implements ApplicationRunner {
 
     @Autowired
     private final TaskStatusRepository taskStatusRepository;
+    @Autowired
+    private final LabelRepository labelRepository;
 
 
     @Override
@@ -43,6 +47,7 @@ public class DataInitializer implements ApplicationRunner {
                 {"Published", "published"}
         };
 
+
         for (String[] statusData : defaultStatuses) {
             String name = statusData[0];
             String slug = statusData[1];
@@ -51,6 +56,16 @@ public class DataInitializer implements ApplicationRunner {
                 status.setName(name);
                 status.setSlug(slug);
                 taskStatusRepository.save(status);
+            }
+        }
+
+        String[] defaultLabels = {"feature", "bug"};
+
+        for (String defaultLabel : defaultLabels) {
+            if (labelRepository.findByName(defaultLabel).isEmpty()) {
+                Label label = new Label();
+                label.setName(defaultLabel);
+                labelRepository.save(label);
             }
         }
 

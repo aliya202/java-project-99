@@ -1,0 +1,93 @@
+package hexlet.code.controller;
+
+import hexlet.code.dto.LabelCreateDTO;
+import hexlet.code.dto.LabelDTO;
+import hexlet.code.dto.LabelUpdateDTO;
+import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.mapper.LabelMapper;
+import hexlet.code.model.Label;
+import hexlet.code.repository.LabelRepository;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
+public class LabelController {
+
+    @Autowired
+    private LabelRepository labelRepository;
+    @Autowired
+    private LabelMapper labelMapper;
+
+    @GetMapping("/labels")
+    @ResponseStatus(HttpStatus.OK)
+    public List<LabelDTO> index() {
+        var labels = labelRepository.findAll();
+        return labels.stream()
+                .map(labelMapper::map)
+                .toList();
+    }
+
+    @GetMapping("/labels/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public LabelDTO show(@PathVariable Long id) {
+        var label = labelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Label with id " + id + " not found"));
+        return labelMapper.map(label);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/labels")
+    @ResponseStatus(HttpStatus.CREATED)
+    public LabelDTO create(@Valid @RequestBody LabelCreateDTO labelCreateDTO) {
+        if (labelRepository.findByName(labelCreateDTO.getName()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Label with name already exists");
+        }
+        Label label = labelMapper.map(labelCreateDTO);
+        labelRepository.save(label);
+        return labelMapper.map(label);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/labels/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public LabelDTO update(@RequestBody LabelUpdateDTO labelUpdateDTO, @PathVariable Long id) {
+        Label label = labelRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found"));
+        if (labelUpdateDTO.getName() != null && !labelUpdateDTO.getName().equals(label.getName())) {
+            if (labelRepository.findByName(labelUpdateDTO.getName()).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Label with name already exists");
+            }
+        }
+        labelMapper.update(labelUpdateDTO, label);
+        labelRepository.save(label);
+        return labelMapper.map(label);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/labels/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        Label label = labelRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found"));
+        // Если метка связана с задачами, удаление запрещено
+        if (label.getTasks() != null && !label.getTasks().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot delete label associated with tasks");
+        }
+        labelRepository.delete(label);
+    }
+}
