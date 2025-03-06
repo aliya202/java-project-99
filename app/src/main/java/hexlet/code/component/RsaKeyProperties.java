@@ -1,13 +1,14 @@
 package hexlet.code.component;
 
 
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.StreamUtils;
 import org.springframework.stereotype.Component;
-import jakarta.annotation.PostConstruct;
+import org.springframework.util.StreamUtils;
+
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
@@ -37,7 +38,8 @@ public class RsaKeyProperties {
             byte[] decodedPublic = Base64.getDecoder().decode(publicKeyContent);
 
             ClassPathResource privateResource = new ClassPathResource("certs/private.pem");
-            String privateKeyContent = StreamUtils.copyToString(privateResource.getInputStream(), StandardCharsets.UTF_8);
+            String privateKeyContent = StreamUtils.copyToString(privateResource.getInputStream(),
+                    StandardCharsets.UTF_8);
             privateKeyContent = privateKeyContent
                     .replace("-----BEGIN PRIVATE KEY-----", "")
                     .replace("-----END PRIVATE KEY-----", "")

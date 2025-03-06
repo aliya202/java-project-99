@@ -84,7 +84,7 @@ public class LabelController {
     public void delete(@PathVariable Long id) {
         Label label = labelRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found"));
-        // Если метка связана с задачами, удаление запрещено
+
         if (label.getTasks() != null && !label.getTasks().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot delete label associated with tasks");
         }

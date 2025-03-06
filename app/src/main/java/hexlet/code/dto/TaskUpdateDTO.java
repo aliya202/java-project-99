@@ -1,8 +1,5 @@
 package hexlet.code.dto;
 
-import hexlet.code.model.Task;
-import hexlet.code.model.User;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 

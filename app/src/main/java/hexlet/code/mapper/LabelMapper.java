@@ -24,5 +24,4 @@ public abstract class LabelMapper {
 
     public abstract void update(LabelUpdateDTO update, @MappingTarget Label destination);
 
-
 }
