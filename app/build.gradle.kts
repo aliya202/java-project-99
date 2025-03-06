@@ -27,6 +27,10 @@ repositories {
     mavenCentral()
 }
 
+val h2DatabaseVersion = "2.3.232"
+val hikariCPVersion = "6.2.1"
+val postgresqlVersion = "42.7.5"
+
 dependencies {
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5")
@@ -41,7 +45,9 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.springframework.security:spring-security-test:6.4.3")
-
+    implementation("com.h2database:h2:$h2DatabaseVersion")
+    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-devtools")

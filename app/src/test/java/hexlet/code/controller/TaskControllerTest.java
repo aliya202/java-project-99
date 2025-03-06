@@ -201,24 +201,19 @@ class TaskControllerTest {
 
     @Test
     public void testFilterTasks() throws Exception {
-        // Создаем исполнителя
         User assignee = new User();
         assignee.setFirstName("Assignee");
         assignee.setEmail("assignee@example.com");
         assignee.setPasswordDigest("$2a$10$dummyHashedPassword");
         userRepository.save(assignee);
 
-        // Создаем метку
         Label label = new Label();
         label.setName("TestLabel");
         label = labelRepository.save(label);
 
-        // Создаем статус "to_be_fixed" (если его нет, выбрасываем исключение)
         TaskStatus statusBeFixed = taskStatusRepository.findBySlug("to_be_fixed")
                 .orElseThrow(() -> new IllegalStateException("Status to_be_fixed not found"));
 
-        // Создаем задачу с нужными параметрами: title содержит "Create new version",
-        // статус "to_be_fixed", исполнитель и связанная метка
         Task filteredTask = new Task();
         filteredTask.setIndex(300);
         filteredTask.setTitle("Create new version");
@@ -228,7 +223,6 @@ class TaskControllerTest {
         filteredTask.getLabels().add(label);
         taskRepository.save(filteredTask);
 
-        // Выполняем GET запрос с параметрами фильтрации
         var result = mockMvc.perform(get("/api/tasks")
                         .param("titleCont", "create")
                         .param("assigneeId", String.valueOf(assignee.getId()))
@@ -239,7 +233,6 @@ class TaskControllerTest {
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
-        // Проверяем, что возвращается массив с одной задачей и ее title соответствует ожидаемому значению
         assertThatJson(body).isArray().hasSize(1);
         assertThatJson(body).node("[0].title").isEqualTo("Create new version");
     }
