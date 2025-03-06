@@ -25,8 +25,6 @@ sentry {
     authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
-
-
 repositories {
     mavenCentral()
 }
