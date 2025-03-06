@@ -11,9 +11,6 @@ jobs:
       run:
         working-directory: app
 
-    env:
-      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-
     steps:
       - uses: actions/checkout@v3
         with:
@@ -29,12 +26,13 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.7
+          gradle-version: 8.5
           arguments: build --refresh-dependencies
           build-root-directory: app
 
       - name: Check Style
         run: ./gradlew checkstyleMain
+
 
       - name: Run Tests with Debug Logs
         run: ./gradlew test --info
