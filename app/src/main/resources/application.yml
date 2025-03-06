@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: hexlet.code
   jpa:
     show-sql: true
     hibernate:
@@ -6,3 +8,14 @@ spring:
   output:
     ansi:
       enabled: always
+
+  springdoc:
+    api-docs:
+      enabled: true
+      path: /v3/api-docs
+    swagger-ui:
+      path: /swagger-ui.html
+
+  sentry:
+    dsn: ${{secrets.SENTRY_AUTH_TOKEN}}
+    traces-sample-rate: 1.0
