@@ -29,13 +29,12 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2
         with:
-          gradle-version: 8.5
+          gradle-version: 8.7
           arguments: build --refresh-dependencies
           build-root-directory: app
 
       - name: Check Style
         run: ./gradlew checkstyleMain
-
 
       - name: Run Tests with Debug Logs
         run: ./gradlew test --info
