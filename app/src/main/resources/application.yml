@@ -8,7 +8,6 @@ spring:
   output:
     ansi:
       enabled: always
-
   springdoc:
     api-docs:
       enabled: true
@@ -21,5 +20,5 @@ rsa:
   public-key: classpath:certs/public.pem
 
 sentry:
-  dsn: ${{secrets.SENTRY_DNS}}
+  dsn: https://2b8668d995f12eccabc1efaa20b72f9a@o4508930723479552.ingest.de.sentry.io/4508930786590800
   traces-sample-rate: 1.0
