@@ -5,10 +5,14 @@ import hexlet.code.dto.TaskCreateDTO;
 import hexlet.code.dto.TaskDTO;
 import hexlet.code.dto.TaskUpdateDTO;
 import hexlet.code.mapper.TaskMapper;
+import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +53,13 @@ class TaskControllerTest {
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private LabelRepository labelRepository;
+
 
     @Autowired
     private TaskMapper taskMapper;
@@ -186,5 +197,41 @@ class TaskControllerTest {
     public void testShowWithoutAuth() throws Exception {
         mockMvc.perform(get("/api/tasks/{id}", testTask.getId()))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void testFilterTasks() throws Exception {
+        User assignee = new User();
+        assignee.setFirstName("Assignee");
+        assignee.setEmail("assignee@example.com");
+        assignee.setPasswordDigest("$2a$10$dummyHashedPassword");
+        userRepository.save(assignee);
+
+        Label label = new Label();
+        label.setName("TestLabel");
+        label = labelRepository.save(label);
+
+        TaskStatus statusBeFixed = taskStatusRepository.findBySlug("to_be_fixed")
+                .orElseThrow(() -> new IllegalStateException("Status to_be_fixed not found"));
+        Task filteredTask = new Task();
+        filteredTask.setIndex(300);
+        filteredTask.setTitle("Create new version");
+        filteredTask.setContent("Description of task");
+        filteredTask.setTaskStatus(statusBeFixed);
+        filteredTask.setAssignee(assignee);
+        filteredTask.getLabels().add(label);
+        taskRepository.save(filteredTask);
+
+        var result = mockMvc.perform(get("/api/tasks")
+                        .param("titleCont", "create")
+                        .param("assigneeId", String.valueOf(assignee.getId()))
+                        .param("status", "to_be_fixed")
+                        .param("labelId", String.valueOf(label.getId()))
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                .andExpect(status().isOk())
+                .andReturn();
+        String body = result.getResponse().getContentAsString();
+        assertThatJson(body).isArray().hasSize(1);
+        assertThatJson(body).node("[0].title").isEqualTo("Create new version");
     }
 }

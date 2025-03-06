@@ -7,8 +7,10 @@ import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskMapper;
 import hexlet.code.model.Task;
 import hexlet.code.repository.TaskRepository;
+import hexlet.code.specification.TaskSpecifications;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,11 +38,25 @@ public class TaskController {
 
     @GetMapping("/tasks")
     @ResponseStatus(HttpStatus.OK)
-    public List<TaskDTO> index() {
-        var tasks = taskRepository.findAll();
-        return tasks.stream()
-                .map(taskMapper::map)
-                .toList();
+    public List<TaskDTO> index(
+            @RequestParam(name = "titleCont", required = false) String titleCont,
+            @RequestParam(name = "assigneeId", required = false) Long assigneeId,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "labelId", required = false) Long labelId
+    ) {
+        Specification<Task> spec = Specification.where(null);
+        if (titleCont != null && !titleCont.isEmpty()) {
+            spec = spec.and(TaskSpecifications.titleContains(titleCont));
+        }
+        if (assigneeId != null) {
+            spec = spec.and(TaskSpecifications.assigneeEquals(assigneeId));
+        }
+        if (status != null && !status.isEmpty()) {
+            spec = spec.and(TaskSpecifications.statusEquals(status));
+        }
+
+        List<Task> tasks = taskRepository.findAll(spec);
+        return tasks.stream().map(taskMapper::map).toList();
     }
 
     @GetMapping("/tasks/{id}")
