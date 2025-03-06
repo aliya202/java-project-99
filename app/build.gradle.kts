@@ -68,3 +68,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.sentryBundleSourcesJava {
+    enabled = System.getenv("SENTRY_AUTH_TOKEN") != null
+}
