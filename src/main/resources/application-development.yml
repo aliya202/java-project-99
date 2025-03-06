@@ -2,12 +2,9 @@ spring:
   datasource:
     url: jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;
     driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
+    username:
+    password:
   h2:
     console:
       enabled: true
       path: /h2-console
-
-sentry:
-  dsn: ""
