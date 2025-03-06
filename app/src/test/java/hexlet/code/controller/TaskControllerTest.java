@@ -35,9 +35,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = {"data.initializer.enabled=false"})
 @AutoConfigureMockMvc
-class TaskControllerTest {
+public class TaskControllerTest {
 
     @Autowired
     private WebApplicationContext wac;

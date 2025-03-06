@@ -12,9 +12,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(name = "data.initializer.enabled", havingValue = "true", matchIfMissing = true)
 @AllArgsConstructor
 public class DataInitializer implements ApplicationRunner {
 
