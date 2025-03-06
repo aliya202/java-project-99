@@ -26,6 +26,7 @@ sentry {
 }
 
 
+
 repositories {
     mavenCentral()
 }
@@ -64,6 +65,11 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
 }
+
+application {
+    mainClass.set("hexlet.code.AppApplication")
+}
+
 
 tasks.test {
     useJUnitPlatform()
