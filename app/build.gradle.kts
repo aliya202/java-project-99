@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "3.4.3"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "8.6"
+    id ("io.sentry.jvm.gradle") version "5.3.0"
 }
 
 group = "hexlet.code"
@@ -13,6 +14,15 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+
+sentry {
+    includeSourceContext = true
+
+    org = "aliya202"
+    projectName = "java-log4j2"
+    authToken = System.getenv("SENTRY_AUTH_TOKEN")
+}
+
 
 repositories {
     mavenCentral()
