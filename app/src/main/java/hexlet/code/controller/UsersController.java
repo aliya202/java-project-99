@@ -10,6 +10,7 @@ import hexlet.code.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,16 +35,19 @@ public class UsersController {
 
 
     @GetMapping("/users")
-    List<UserDTO> index() {
+    public ResponseEntity<List<UserDTO>> index() {
         var users = userRepository.findAll();
-        return users.stream()
+        var result = users.stream()
                 .map(p -> userMapper.map(p))
                 .toList();
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(result.size()))
+                .body(result);
     }
 
     @GetMapping("/users/{id}")
     @ResponseStatus(HttpStatus.OK)
-    UserDTO show(@PathVariable Long id) {
+    public UserDTO show(@PathVariable Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         return userMapper.map(user);
@@ -51,7 +55,7 @@ public class UsersController {
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
-    UserDTO create(@Valid @RequestBody UserCreateDTO userData) {
+    public UserDTO create(@Valid @RequestBody UserCreateDTO userData) {
         var user = userMapper.map(userData);
         userRepository.save(user);
         return userMapper.map(user);
@@ -59,7 +63,7 @@ public class UsersController {
 
     @PutMapping("/users/{id}")
     @ResponseStatus(HttpStatus.OK)
-    UserDTO update(@RequestBody UserUpdateDTO userData, @PathVariable Long id) {
+    public UserDTO update(@RequestBody UserUpdateDTO userData, @PathVariable Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not Found"));
         userMapper.update(userData, user);

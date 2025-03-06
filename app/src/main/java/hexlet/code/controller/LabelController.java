@@ -10,6 +10,7 @@ import hexlet.code.repository.LabelRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,11 +36,13 @@ public class LabelController {
 
     @GetMapping("/labels")
     @ResponseStatus(HttpStatus.OK)
-    public List<LabelDTO> index() {
+    public ResponseEntity<List<LabelDTO>> index() {
         var labels = labelRepository.findAll();
-        return labels.stream()
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(labels.size()))
+                .body(labels.stream()
                 .map(labelMapper::map)
-                .toList();
+                .toList());
     }
 
     @GetMapping("/labels/{id}")

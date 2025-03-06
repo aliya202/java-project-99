@@ -10,6 +10,7 @@ import hexlet.code.repository.TaskStatusRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,16 +35,19 @@ public class TaskStatusController {
 
 
     @GetMapping("/task_statuses")
-    List<TaskStatusDTO> index() {
+    public ResponseEntity<List<TaskStatusDTO>> index() {
         var users = taskStatusRepository.findAll();
-        return users.stream()
+        var result = users.stream()
                 .map(p -> taskStatusMapper.map(p))
                 .toList();
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(result.size()))
+                .body(result);
     }
 
     @GetMapping("/task_statuses/{id}")
     @ResponseStatus(HttpStatus.OK)
-    TaskStatusDTO show(@PathVariable Long id) {
+    public TaskStatusDTO show(@PathVariable Long id) {
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TaskStatus with id " + id + " not found"));
         return taskStatusMapper.map(taskStatus);
@@ -51,7 +55,7 @@ public class TaskStatusController {
 
     @PostMapping("/task_statuses")
     @ResponseStatus(HttpStatus.CREATED)
-    TaskStatusDTO create(@Valid @RequestBody TaskStatusCreateDTO userData) {
+    public TaskStatusDTO create(@Valid @RequestBody TaskStatusCreateDTO userData) {
         var taskStatus = taskStatusMapper.map(userData);
         taskStatusRepository.save(taskStatus);
         return taskStatusMapper.map(taskStatus);
@@ -59,7 +63,7 @@ public class TaskStatusController {
 
     @PutMapping("/task_statuses/{id}")
     @ResponseStatus(HttpStatus.OK)
-    TaskStatusDTO update(@RequestBody TaskStatusUpdateDTO taskStatusUpdateDTO, @PathVariable Long id) {
+    public TaskStatusDTO update(@RequestBody TaskStatusUpdateDTO taskStatusUpdateDTO, @PathVariable Long id) {
         var taskStatus = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not Found"));
         taskStatusMapper.update(taskStatusUpdateDTO, taskStatus);
