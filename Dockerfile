@@ -1,6 +1,6 @@
-FROM eclipse-temurin:20-jdk
+FROM eclipse-temurin:21.0.2_13-jdk
 
-ARG GRADLE_VERSION=8.5
+ARG GRADLE_VERSION=8.7
 
 RUN apt-get update && apt-get install -yq unzip wget
 
