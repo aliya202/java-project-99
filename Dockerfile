@@ -12,12 +12,9 @@ ENV GRADLE_HOME=/opt/gradle
 RUN mv gradle-${GRADLE_VERSION} ${GRADLE_HOME}
 ENV PATH=$PATH:$GRADLE_HOME/bin
 
+WORKDIR /
 
-WORKDIR /src
-
-COPY . /src
-
-RUN chmod +x gradlew
+COPY ./ .
 
 RUN gradle installDist
 
