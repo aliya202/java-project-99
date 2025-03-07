@@ -5,15 +5,22 @@ import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.Label;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.service.CustomUserDetailsService;
+import hexlet.code.utils.LabelUtils;
+import hexlet.code.utils.TaskStatusUtils;
+import hexlet.code.utils.UserUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @ConditionalOnProperty(name = "data.initializer.enabled", havingValue = "true", matchIfMissing = true)
@@ -28,48 +35,38 @@ public class DataInitializer implements ApplicationRunner {
     private final UserMapper userMapper;
 
     @Autowired
+    private TaskStatusUtils taskStatusUtils;
+    @Autowired
     private final TaskStatusRepository taskStatusRepository;
     @Autowired
     private final LabelRepository labelRepository;
+    @Autowired
+    private final UserUtils userUtils;
+    @Autowired
+    private final LabelUtils labelUtils;
+    @Autowired
+    private final CustomUserDetailsService customUserDetailsService;
 
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        var userData = new UserCreateDTO();
-        userData.setFirstName("hexlet");
-        userData.setEmail("hexlet@example.com");
-        userData.setPassword("123");
-        var user = userMapper.map(userData);
-        userRepository.save(user);
-        String[][] defaultStatuses = {
-                {"Draft", "draft"},
-                {"To Review", "to_review"},
-                {"To Be Fixed", "to_be_fixed"},
-                {"To Publish", "to_publish"},
-                {"Published", "published"}
-        };
+        User admin = userUtils.getAdminUser();
+        if (userRepository.findByEmail(admin.getEmail()).isEmpty()) {
+            customUserDetailsService.createUser(admin);
+        }
+        List<TaskStatus> defaultTaskStatuses = taskStatusUtils.getDefaultTaskStatuses();
 
-
-        for (String[] statusData : defaultStatuses) {
-            String name = statusData[0];
-            String slug = statusData[1];
-            if (taskStatusRepository.findBySlug(slug).isEmpty()) {
-                TaskStatus status = new TaskStatus();
-                status.setName(name);
-                status.setSlug(slug);
-                taskStatusRepository.save(status);
+        for (TaskStatus taskStatus : defaultTaskStatuses) {
+            if (taskStatusRepository.findBySlug(taskStatus.getSlug()).isEmpty()) {
+                taskStatusRepository.save(taskStatus);
             }
         }
 
-        String[] defaultLabels = {"feature", "bug"};
-
-        for (String defaultLabel : defaultLabels) {
-            if (labelRepository.findByName(defaultLabel).isEmpty()) {
-                Label label = new Label();
-                label.setName(defaultLabel);
+        List<Label> defaultLabels = labelUtils.getDefaultLabels();
+        for (Label label : defaultLabels) {
+            if (labelRepository.findByName(label.getName()).isEmpty()) {
                 labelRepository.save(label);
             }
         }
-
     }
 }

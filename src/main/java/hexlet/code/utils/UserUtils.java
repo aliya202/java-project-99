@@ -12,6 +12,10 @@ public class UserUtils {
     @Autowired
     private UserRepository userRepository;
 
+    private static final String ADMIN_FIRST_NAME = "hexlet";
+    private static final String ADMIN_EMAIL = "hexlet@example.com";
+    private static final String ADMIN_PASSWORD = "123";
+
     public User getCurrentUser() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -21,4 +25,11 @@ public class UserUtils {
         return userRepository.findByEmail(email).get();
     }
 
+    public User getAdminUser() {
+        User adminUser = new User();
+        adminUser.setFirstName(ADMIN_FIRST_NAME);
+        adminUser.setEmail(ADMIN_EMAIL);
+        adminUser.setPasswordDigest(UserUtils.ADMIN_PASSWORD);
+        return adminUser;
+    }
 }

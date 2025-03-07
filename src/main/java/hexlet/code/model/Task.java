@@ -2,14 +2,14 @@ package hexlet.code.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,27 +39,21 @@ public class Task implements BaseEntity {
 
     private long index;
 
-    @NotBlank(message = "Title must not be blank")
-    private String title;
+    @NotBlank(message = "Name must not be blank")
+    private String name;
 
-    private String content;
+    private String description;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "task_status_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @NotNull
     private TaskStatus taskStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "assignee_id")
+    @ManyToOne(fetch = FetchType.EAGER)
     private User assignee;
 
     @CreatedDate
     private LocalDate createdAt;
 
-    @ManyToMany
-    @JoinTable(
-            name = "task_labels",
-            joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "label_id")
-    )
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<Label> labels = new HashSet<>();
 }

@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/login").permitAll()
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/favicon.ico").permitAll()
                         .requestMatchers("/api/welcome").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/index.html").permitAll()

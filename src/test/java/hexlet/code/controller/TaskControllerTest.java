@@ -93,8 +93,8 @@ public class TaskControllerTest {
 
         Task task = new Task();
         task.setIndex(100);
-        task.setTitle("Initial Title");
-        task.setContent("Initial Content");
+        task.setName("Initial Title");
+        task.setDescription("Initial Content");
         task.setTaskStatus(statusDraft);
         taskRepository.save(task);
         testTask = task;
@@ -120,8 +120,8 @@ public class TaskControllerTest {
         String body = result.getResponse().getContentAsString();
 
         assertThatJson(body).and(
-                v -> v.node("title").isEqualTo(testTask.getTitle()),
-                v -> v.node("content").isEqualTo(testTask.getContent()),
+                v -> v.node("title").isEqualTo(testTask.getName()),
+                v -> v.node("content").isEqualTo(testTask.getDescription()),
                 v -> v.node("status").isEqualTo(testTask.getTaskStatus().getSlug())
         );
     }
@@ -216,8 +216,8 @@ public class TaskControllerTest {
 
         Task filteredTask = new Task();
         filteredTask.setIndex(300);
-        filteredTask.setTitle("Create new version");
-        filteredTask.setContent("Description of task");
+        filteredTask.setName("Create new version");
+        filteredTask.setDescription("Description of task");
         filteredTask.setTaskStatus(statusBeFixed);
         filteredTask.setAssignee(assignee);
         filteredTask.getLabels().add(label);

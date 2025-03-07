@@ -9,7 +9,7 @@ spring:
     ansi:
       enabled: always
   profiles:
-    active: development
+    active: dev
 
 rsa:
   private-key: classpath:certs/private.pem

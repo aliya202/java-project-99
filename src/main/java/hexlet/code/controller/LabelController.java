@@ -11,7 +11,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,8 +40,8 @@ public class LabelController {
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(labels.size()))
                 .body(labels.stream()
-                .map(labelMapper::map)
-                .toList());
+                        .map(labelMapper::map)
+                        .toList());
     }
 
     @GetMapping("/labels/{id}")
@@ -53,7 +52,6 @@ public class LabelController {
         return labelMapper.map(label);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/labels")
     @ResponseStatus(HttpStatus.CREATED)
     public LabelDTO create(@Valid @RequestBody LabelCreateDTO labelCreateDTO) {
@@ -65,7 +63,6 @@ public class LabelController {
         return labelMapper.map(label);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PutMapping("/labels/{id}")
     @ResponseStatus(HttpStatus.OK)
     public LabelDTO update(@RequestBody LabelUpdateDTO labelUpdateDTO, @PathVariable Long id) {
@@ -81,7 +78,6 @@ public class LabelController {
         return labelMapper.map(label);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/labels/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {

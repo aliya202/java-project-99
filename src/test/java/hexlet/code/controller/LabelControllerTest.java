@@ -168,8 +168,8 @@ public class LabelControllerTest {
 
         Task task = new Task();
         task.setIndex(123);
-        task.setTitle("Task with Label");
-        task.setContent("Some content");
+        task.setName("Task with Label");
+        task.setDescription("Some content");
         task.setTaskStatus(status);
         task.getLabels().add(labelLinked);
         taskRepository.save(task);

@@ -1,11 +1,13 @@
 package hexlet.code.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -22,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -49,10 +52,6 @@ public class User implements UserDetails, BaseEntity {
     @ToString.Include
     private String email;
 
-    @Size(min = 3, message = "Пароль должен содержать минимум 3 символа")
-    @JsonIgnore
-    private String password;
-
     private String passwordDigest;
 
     @CreatedDate
@@ -60,6 +59,9 @@ public class User implements UserDetails, BaseEntity {
 
     @LastModifiedDate
     private LocalDate updatedAt;
+
+    @OneToMany(mappedBy = "assignee", cascade = CascadeType.MERGE)
+    private List<Task> tasks;
 
     @Override
     public String getPassword() {
