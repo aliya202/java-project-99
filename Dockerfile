@@ -1,33 +1,25 @@
-FROM node:20.6.1 AS frontend
+FROM eclipse-temurin:20-jdk
 
-WORKDIR /frontend
+ARG GRADLE_VERSION=8.2
 
-COPY frontend/package*.json .
+RUN apt-get update && apt-get install -yq unzip wget
 
-RUN npm ci
+RUN wget -q https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip \
+    && unzip gradle-${GRADLE_VERSION}-bin.zip \
+    && rm gradle-${GRADLE_VERSION}-bin.zip
 
-COPY frontend /frontend
+ENV GRADLE_HOME=/opt/gradle
+RUN mv gradle-${GRADLE_VERSION} ${GRADLE_HOME}
+ENV PATH=$PATH:$GRADLE_HOME/bin
 
-RUN npm run build
 
-FROM eclipse-temurin:21-jdk
+WORKDIR /src
 
-RUN apt-get update && apt-get install -yq make unzip
+COPY . /src
 
-WORKDIR /backend
+RUN chmod +x gradlew
 
-COPY gradle gradle
-COPY build.gradle.kts .
-COPY settings.gradle.kts .
-COPY gradlew .
+RUN ./gradlew installDist
 
-RUN ./gradlew --no-daemon dependencies
 
-COPY src src
-
-RUN ./gradlew --no-daemon build
-
-ENV JAVA_OPTS "-Xmx512M -Xms512M"
-EXPOSE 8080
-
-CMD ./build/install/app/bin/app
+CMD ["./build/install/app/bin/app"]
