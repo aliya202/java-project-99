@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -50,8 +51,11 @@ public class UsersControllerTest {
 
     private User testUser;
 
+    private SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor token;
+
     @BeforeEach
     public void setUp() {
+        token = jwt().jwt(builder -> builder.subject("hexlet@example.com"));
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
@@ -100,8 +104,11 @@ public class UsersControllerTest {
         createDTO.setPassword("secret-password");
 
         var request = post("/api/users")
+                .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(createDTO));
+                .content(om.writeValueAsString(createDTO))
+                .with(SecurityMockMvcRequestPostProcessors.jwt()
+                        .jwt(jwt -> jwt.claim("sub", "hexlet@example.com")));
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isCreated())
@@ -118,7 +125,6 @@ public class UsersControllerTest {
         var user = userOptional.get();
         assertThat(user.getPasswordDigest()).isNotEqualTo(createDTO.getPassword());
     }
-
     @Test
     public void testUpdate() throws Exception {
         UserUpdateDTO updateDTO = new UserUpdateDTO();
