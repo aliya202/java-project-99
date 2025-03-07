@@ -5,7 +5,6 @@ import hexlet.code.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -41,22 +40,15 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/index.html", "/favicon.ico", "/css/**", "/js/**", "/assets/**")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/api/login").permitAll()
+                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/api/welcome").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/index.html").permitAll()
+                        .requestMatchers("/assets/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/v3/api-docs/", "v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/task_statuses").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/task_statuses/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/task_statuses/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/taks").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/tasks/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/tasks/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/labels").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/labels/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/labels/**").authenticated()
-                        .requestMatchers("/users").authenticated()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+                        .requestMatchers("/v3/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer((rs) -> rs.jwt((jwt) -> jwt.decoder(jwtDecoder)))
