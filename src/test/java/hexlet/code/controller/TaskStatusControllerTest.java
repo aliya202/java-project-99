@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {"data.initializer.enabled=false"})
+
 @AutoConfigureMockMvc
 public class TaskStatusControllerTest {
 
@@ -53,7 +54,6 @@ public class TaskStatusControllerTest {
     @Autowired
     private LabelRepository labelRepository;
 
-
     @Autowired
     private TaskStatusMapper taskStatusMapper;
 
@@ -61,18 +61,22 @@ public class TaskStatusControllerTest {
 
     @BeforeEach
     public void setUp() {
+        // Initialize MockMvc with Spring Security support
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .build();
-        taskStatusRepository.deleteAll();
+        // Clear dependent repositories (but do not clear taskStatusRepository if your DataInitializer might already populate it)
         userRepository.deleteAll();
         labelRepository.deleteAll();
-        taskStatus = new TaskStatus();
-        taskStatus.setName("ToReview");
-        taskStatus.setSlug("to_review");
-
-        taskStatusRepository.save(taskStatus);
+        // Instead of clearing taskStatusRepository, check if a TaskStatus with slug "to_review" exists
+        taskStatus = taskStatusRepository.findBySlug("to_review")
+                .orElseGet(() -> {
+                    TaskStatus ts = new TaskStatus();
+                    ts.setName("ToReview");
+                    ts.setSlug("to_review");
+                    return taskStatusRepository.save(ts);
+                });
     }
 
     @Test
@@ -104,7 +108,6 @@ public class TaskStatusControllerTest {
         createDTO.setName("Draft");
         createDTO.setSlug("draft");
 
-
         var request = post("/api/task_statuses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(createDTO))
@@ -127,7 +130,6 @@ public class TaskStatusControllerTest {
         TaskStatusUpdateDTO updateDTO = new TaskStatusUpdateDTO();
         updateDTO.setName("ToReview");
         updateDTO.setSlug("to_review");
-
 
         var request = put("/api/task_statuses/{id}", taskStatus.getId())
                 .contentType(MediaType.APPLICATION_JSON)
