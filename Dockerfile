@@ -25,8 +25,6 @@ RUN ./gradlew --no-daemon dependencies
 
 COPY src src
 
-COPY --from=frontend /frontend/dist /backend/src/main/resources/static
-
 RUN ./gradlew --no-daemon build
 
 ENV JAVA_OPTS "-Xmx512M -Xms512M"
