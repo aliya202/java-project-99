@@ -9,6 +9,7 @@ import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -125,26 +126,25 @@ public class UsersControllerTest {
         var user = userOptional.get();
         assertThat(user.getPasswordDigest()).isNotEqualTo(createDTO.getPassword());
     }
-    @Test
-    public void testUpdate() throws Exception {
-        UserUpdateDTO updateDTO = new UserUpdateDTO();
-        updateDTO.setFirstName("UpdatedName");
-        updateDTO.setLastName("UpdatedLastName");
 
+    @Test
+    public void testUpdateUser() throws Exception {
+        UserUpdateDTO updateDTO = new UserUpdateDTO();
+        updateDTO.setFirstName(JsonNullable.of("UpdatedName"));
+        updateDTO.setLastName(JsonNullable.of("UpdatedLastName"));
 
         var request = put("/api/users/{id}", testUser.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(updateDTO))
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
-
         UserDTO updatedUser = om.readValue(body, UserDTO.class);
-        assertThat(updatedUser.getFirstName()).isEqualTo(updateDTO.getFirstName());
-        assertThat(updatedUser.getLastName()).isEqualTo(updateDTO.getLastName());
+        assertThat(updatedUser.getFirstName()).isEqualTo("UpdatedName");
+        assertThat(updatedUser.getLastName()).isEqualTo("UpdatedLastName");
     }
 
     @Test

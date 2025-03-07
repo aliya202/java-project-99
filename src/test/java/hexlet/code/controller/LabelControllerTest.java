@@ -13,11 +13,11 @@ import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -82,7 +83,7 @@ public class LabelControllerTest {
     @Test
     public void testIndex() throws Exception {
         var result = mockMvc.perform(get("/api/labels")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -92,7 +93,7 @@ public class LabelControllerTest {
     @Test
     public void testShow() throws Exception {
         var result = mockMvc.perform(get("/api/labels/{id}", testLabel.getId())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -107,7 +108,7 @@ public class LabelControllerTest {
         var request = post("/api/labels")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(createDTO))
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isCreated())
@@ -122,14 +123,14 @@ public class LabelControllerTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdateLabel() throws Exception {
         LabelUpdateDTO updateDTO = new LabelUpdateDTO();
-        updateDTO.setName("Bug Updated");
+        updateDTO.setName(JsonNullable.of("Bug Updated"));
 
         var request = put("/api/labels/{id}", testLabel.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(updateDTO))
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -137,7 +138,7 @@ public class LabelControllerTest {
 
         String body = result.getResponse().getContentAsString();
         LabelDTO labelDTO = om.readValue(body, LabelDTO.class);
-        assertThat(labelDTO.getName()).isEqualTo(updateDTO.getName());
+        assertThat(labelDTO.getName()).isEqualTo("Bug Updated");
     }
 
     @Test
@@ -147,7 +148,7 @@ public class LabelControllerTest {
         labelToDelete = labelRepository.save(labelToDelete);
 
         var request = delete("/api/labels/{id}", labelToDelete.getId())
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
 
@@ -175,7 +176,7 @@ public class LabelControllerTest {
         taskRepository.save(task);
 
         var request = delete("/api/labels/{id}", labelLinked.getId())
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
         mockMvc.perform(request)
                 .andExpect(status().isConflict());
     }

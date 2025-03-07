@@ -12,11 +12,11 @@ import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -86,7 +87,7 @@ public class TaskStatusControllerTest {
     @Test
     public void testIndex() throws Exception {
         var result = mockMvc.perform(get("/api/task_statuses")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -96,7 +97,7 @@ public class TaskStatusControllerTest {
     @Test
     public void testShow() throws Exception {
         var result = mockMvc.perform(get("/api/task_statuses/{id}", taskStatus.getId())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -115,7 +116,7 @@ public class TaskStatusControllerTest {
         var request = post("/api/task_statuses")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(createDTO))
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
         var result = mockMvc.perform(request)
                 .andExpect(status().isCreated())
                 .andReturn();
@@ -130,30 +131,29 @@ public class TaskStatusControllerTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdateTaskStatus() throws Exception {
         TaskStatusUpdateDTO updateDTO = new TaskStatusUpdateDTO();
-        updateDTO.setName("ToReview");
-        updateDTO.setSlug("to_review");
+        updateDTO.setName(JsonNullable.of("ToReview"));
+        updateDTO.setSlug(JsonNullable.of("to_review"));
 
         var request = put("/api/task_statuses/{id}", taskStatus.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(updateDTO))
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
-
         TaskStatusDTO updatedStatus = om.readValue(body, TaskStatusDTO.class);
-        assertThat(updatedStatus.getName()).isEqualTo(updateDTO.getName());
-        assertThat(updatedStatus.getSlug()).isEqualTo(updateDTO.getSlug());
+        assertThat(updatedStatus.getName()).isEqualTo("ToReview");
+        assertThat(updatedStatus.getSlug()).isEqualTo("to_review");
     }
 
     @Test
     public void testDelete() throws Exception {
         var request = delete("/api/task_statuses/{id}", taskStatus.getId())
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
 

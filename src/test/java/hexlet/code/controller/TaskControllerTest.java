@@ -15,11 +15,11 @@ import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -103,7 +104,7 @@ public class TaskControllerTest {
     @Test
     public void testIndex() throws Exception {
         var result = mockMvc.perform(get("/api/tasks")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -114,7 +115,7 @@ public class TaskControllerTest {
     @Test
     public void testShow() throws Exception {
         var result = mockMvc.perform(get("/api/tasks/{id}", testTask.getId())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -139,7 +140,7 @@ public class TaskControllerTest {
         var request = post("/api/tasks")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(createDTO))
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isCreated())
@@ -156,31 +157,31 @@ public class TaskControllerTest {
     }
 
     @Test
-    public void testUpdate() throws Exception {
+    public void testUpdateTask() throws Exception {
         TaskUpdateDTO updateDTO = new TaskUpdateDTO();
-        updateDTO.setTitle("Updated Title");
-        updateDTO.setContent("Updated Content");
-        updateDTO.setStatus("to_be_fixed");
+        updateDTO.setTitle(JsonNullable.of("Updated Title"));
+        updateDTO.setContent(JsonNullable.of("Updated Content"));
+        updateDTO.setStatus(JsonNullable.of("to_be_fixed"));
 
         var request = put("/api/tasks/{id}", testTask.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(updateDTO))
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
         TaskDTO taskDTO = om.readValue(body, TaskDTO.class);
-        assertThat(taskDTO.getTitle()).isEqualTo(updateDTO.getTitle());
-        assertThat(taskDTO.getContent()).isEqualTo(updateDTO.getContent());
-        assertThat(taskDTO.getStatus()).isEqualTo(updateDTO.getStatus());
+        assertThat(taskDTO.getTitle()).isEqualTo("Updated Title");
+        assertThat(taskDTO.getContent()).isEqualTo("Updated Content");
+        assertThat(taskDTO.getStatus()).isEqualTo("to_be_fixed");
     }
 
     @Test
     public void testDelete() throws Exception {
         var request = delete("/api/tasks/{id}", testTask.getId())
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(jwt());
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
         var taskOptional = taskRepository.findById(testTask.getId());
@@ -228,7 +229,7 @@ public class TaskControllerTest {
                         .param("assigneeId", String.valueOf(assignee.getId()))
                         .param("status", "to_be_fixed")
                         .param("labelId", String.valueOf(label.getId()))
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(jwt()))
                 .andExpect(status().isOk())
                 .andReturn();
 

@@ -68,11 +68,6 @@ public class LabelController {
     public LabelDTO update(@RequestBody LabelUpdateDTO labelUpdateDTO, @PathVariable Long id) {
         Label label = labelRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found"));
-        if (labelUpdateDTO.getName() != null && !labelUpdateDTO.getName().equals(label.getName())) {
-            if (labelRepository.findByName(labelUpdateDTO.getName()).isPresent()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Label with name already exists");
-            }
-        }
         labelMapper.update(labelUpdateDTO, label);
         labelRepository.save(label);
         return labelMapper.map(label);

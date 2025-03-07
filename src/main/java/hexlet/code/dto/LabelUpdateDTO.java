@@ -1,12 +1,13 @@
 package hexlet.code.dto;
 
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
+import org.openapitools.jackson.nullable.JsonNullable;
 
 @Setter
 @Getter
 public class LabelUpdateDTO {
-    @Size(min = 3, max = 1000)
-    private String name;
+    @NotBlank
+    private JsonNullable<String> name;
 }
