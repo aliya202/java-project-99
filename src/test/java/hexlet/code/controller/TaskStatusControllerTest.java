@@ -61,15 +61,13 @@ public class TaskStatusControllerTest {
 
     @BeforeEach
     public void setUp() {
-        // Initialize MockMvc with Spring Security support
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
                 .build();
-        // Clear dependent repositories (but do not clear taskStatusRepository if your DataInitializer might already populate it)
         userRepository.deleteAll();
         labelRepository.deleteAll();
-        // Instead of clearing taskStatusRepository, check if a TaskStatus with slug "to_review" exists
+
         taskStatus = taskStatusRepository.findBySlug("to_review")
                 .orElseGet(() -> {
                     TaskStatus ts = new TaskStatus();
