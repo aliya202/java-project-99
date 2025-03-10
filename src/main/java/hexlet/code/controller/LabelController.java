@@ -80,7 +80,8 @@ public class LabelController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found"));
 
         if (label.getTasks() != null && !label.getTasks().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot delete label associated with tasks");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Cannot delete label associated with tasks");
         }
         labelRepository.delete(label);
     }

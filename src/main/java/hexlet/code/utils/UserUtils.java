@@ -25,6 +25,17 @@ public class UserUtils {
         return userRepository.findByEmail(email).get();
     }
 
+    public boolean isOwner(Long id) {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        var currentUserEmail = authentication.getName();
+        return userRepository.findById(id)
+                .map(user -> user.getEmail().equals(currentUserEmail))
+                .orElse(false);
+    }
+
     public User getAdminUser() {
         User adminUser = new User();
         adminUser.setFirstName(ADMIN_FIRST_NAME);

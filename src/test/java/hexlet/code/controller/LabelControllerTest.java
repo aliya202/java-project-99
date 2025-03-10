@@ -178,7 +178,7 @@ public class LabelControllerTest {
         var request = delete("/api/labels/{id}", labelLinked.getId())
                 .with(jwt());
         mockMvc.perform(request)
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

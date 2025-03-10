@@ -9,6 +9,7 @@ import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -76,7 +77,12 @@ public class TaskStatusController {
     public void delete(@PathVariable Long id) {
         TaskStatus status = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Not Found"));
-        taskStatusRepository.delete(status);
+        try {
+            taskStatusRepository.delete(status);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Cannot delete status: it is linked to tasks");
+        }
     }
 
 }

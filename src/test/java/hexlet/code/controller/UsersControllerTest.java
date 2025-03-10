@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.UserCreateDTO;
 import hexlet.code.dto.UserDTO;
 import hexlet.code.dto.UserUpdateDTO;
-import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.utils.UserUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
@@ -48,7 +48,7 @@ public class UsersControllerTest {
     private UserRepository userRepository;
 
     @Autowired
-    private UserMapper userMapper;
+    private UserUtils userUtils;
 
     private User testUser;
 
@@ -56,7 +56,7 @@ public class UsersControllerTest {
 
     @BeforeEach
     public void setUp() {
-        token = jwt().jwt(builder -> builder.subject("hexlet@example.com"));
+        token = jwt().jwt(builder -> builder.subject(userUtils.getAdminUser().getEmail()));
         mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity())
@@ -75,7 +75,7 @@ public class UsersControllerTest {
     @Test
     public void testIndex() throws Exception {
         var result = mockMvc.perform(get("/api/users")
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(token))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -85,7 +85,7 @@ public class UsersControllerTest {
     @Test
     public void testShow() throws Exception {
         var result = mockMvc.perform(get("/api/users/{id}", testUser.getId())
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()))
+                        .with(token))
                 .andExpect(status().isOk())
                 .andReturn();
         String body = result.getResponse().getContentAsString();
@@ -133,10 +133,12 @@ public class UsersControllerTest {
         updateDTO.setFirstName(JsonNullable.of("UpdatedName"));
         updateDTO.setLastName(JsonNullable.of("UpdatedLastName"));
 
+        token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
+
         var request = put("/api/users/{id}", testUser.getId())
+                .with(token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(om.writeValueAsString(updateDTO))
-                .with(jwt());
+                .content(om.writeValueAsString(updateDTO));
 
         var result = mockMvc.perform(request)
                 .andExpect(status().isOk())
@@ -149,8 +151,9 @@ public class UsersControllerTest {
 
     @Test
     public void testDelete() throws Exception {
+        token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
         var request = delete("/api/users/{id}", testUser.getId())
-                .with(SecurityMockMvcRequestPostProcessors.jwt());
+                .with(token);
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
 
