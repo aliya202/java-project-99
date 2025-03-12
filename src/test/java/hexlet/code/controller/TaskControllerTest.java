@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -159,9 +160,12 @@ public class TaskControllerTest {
     @Test
     public void testUpdateTask() throws Exception {
         TaskUpdateDTO updateDTO = new TaskUpdateDTO();
-        updateDTO.setTitle(JsonNullable.of("Updated Title"));
-        updateDTO.setContent(JsonNullable.of("Updated Content"));
-        updateDTO.setStatus(JsonNullable.of("to_be_fixed"));
+        String newTitle = "Updated Title";
+        String newContent = "Updated Content";
+        String newStatus = "to_be_fixed";
+        updateDTO.setTitle(JsonNullable.of(newTitle));
+        updateDTO.setContent(JsonNullable.of(newContent));
+        updateDTO.setStatus(JsonNullable.of(newStatus));
 
         var request = put("/api/tasks/{id}", testTask.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -173,9 +177,15 @@ public class TaskControllerTest {
                 .andReturn();
         String body = result.getResponse().getContentAsString();
         TaskDTO taskDTO = om.readValue(body, TaskDTO.class);
-        assertThat(taskDTO.getTitle()).isEqualTo("Updated Title");
-        assertThat(taskDTO.getContent()).isEqualTo("Updated Content");
-        assertThat(taskDTO.getStatus()).isEqualTo("to_be_fixed");
+        Optional<Task> byId = taskRepository.findById(testTask.getId());
+
+        assertThat(taskDTO.getTitle()).isEqualTo(newTitle);
+        assertThat(taskDTO.getContent()).isEqualTo(newContent);
+        assertThat(taskDTO.getStatus()).isEqualTo(newStatus);
+
+        assertThat(byId.get().getName()).isEqualTo(newTitle);
+        assertThat(byId.get().getDescription()).isEqualTo(newContent);
+        assertThat(byId.get().getTaskStatus().getSlug()).isEqualTo(newStatus);
     }
 
     @Test

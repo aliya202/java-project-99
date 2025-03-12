@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,7 +126,8 @@ public class LabelControllerTest {
     @Test
     public void testUpdateLabel() throws Exception {
         LabelUpdateDTO updateDTO = new LabelUpdateDTO();
-        updateDTO.setName(JsonNullable.of("Bug Updated"));
+        String newNameValue = "Bug Updated";
+        updateDTO.setName(JsonNullable.of(newNameValue));
 
         var request = put("/api/labels/{id}", testLabel.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +140,9 @@ public class LabelControllerTest {
 
         String body = result.getResponse().getContentAsString();
         LabelDTO labelDTO = om.readValue(body, LabelDTO.class);
-        assertThat(labelDTO.getName()).isEqualTo("Bug Updated");
+        Optional<Label> byId = labelRepository.findById(testLabel.getId());
+        assertThat(byId.get().getName()).isEqualTo(newNameValue);
+        assertThat(labelDTO.getName()).isEqualTo(newNameValue);
     }
 
     @Test

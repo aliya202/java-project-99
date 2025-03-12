@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -130,8 +131,10 @@ public class UsersControllerTest {
     @Test
     public void testUpdateUser() throws Exception {
         UserUpdateDTO updateDTO = new UserUpdateDTO();
-        updateDTO.setFirstName(JsonNullable.of("UpdatedName"));
-        updateDTO.setLastName(JsonNullable.of("UpdatedLastName"));
+        String newFirstName = "UpdatedName";
+        String newLastName = "UpdatedLastName";
+        updateDTO.setFirstName(JsonNullable.of(newFirstName));
+        updateDTO.setLastName(JsonNullable.of(newLastName));
 
         token = jwt().jwt(builder -> builder.subject(testUser.getEmail()));
 
@@ -145,8 +148,13 @@ public class UsersControllerTest {
                 .andReturn();
         String body = result.getResponse().getContentAsString();
         UserDTO updatedUser = om.readValue(body, UserDTO.class);
-        assertThat(updatedUser.getFirstName()).isEqualTo("UpdatedName");
-        assertThat(updatedUser.getLastName()).isEqualTo("UpdatedLastName");
+        Optional<User> byId = userRepository.findById(testUser.getId());
+
+        assertThat(byId.get().getFirstName()).isEqualTo(newFirstName);
+        assertThat(byId.get().getLastName()).isEqualTo(newLastName);
+
+        assertThat(updatedUser.getFirstName()).isEqualTo(newFirstName);
+        assertThat(updatedUser.getLastName()).isEqualTo(newLastName);
     }
 
     @Test

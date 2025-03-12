@@ -9,6 +9,7 @@ import hexlet.code.model.Label;
 import hexlet.code.repository.LabelRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -55,9 +56,6 @@ public class LabelController {
     @PostMapping("/labels")
     @ResponseStatus(HttpStatus.CREATED)
     public LabelDTO create(@Valid @RequestBody LabelCreateDTO labelCreateDTO) {
-        if (labelRepository.findByName(labelCreateDTO.getName()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Label with name already exists");
-        }
         Label label = labelMapper.map(labelCreateDTO);
         labelRepository.save(label);
         return labelMapper.map(label);
@@ -78,11 +76,11 @@ public class LabelController {
     public void delete(@PathVariable Long id) {
         Label label = labelRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Label not found"));
-
-        if (label.getTasks() != null && !label.getTasks().isEmpty()) {
+        try {
+            labelRepository.delete(label);
+        } catch (DataIntegrityViolationException e) {
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
-                    "Cannot delete label associated with tasks");
+                    "Cannot delete label: it is linked to tasks");
         }
-        labelRepository.delete(label);
     }
 }

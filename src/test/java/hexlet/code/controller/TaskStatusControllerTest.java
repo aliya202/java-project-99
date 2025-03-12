@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -133,8 +134,10 @@ public class TaskStatusControllerTest {
     @Test
     public void testUpdateTaskStatus() throws Exception {
         TaskStatusUpdateDTO updateDTO = new TaskStatusUpdateDTO();
-        updateDTO.setName(JsonNullable.of("ToReview"));
-        updateDTO.setSlug(JsonNullable.of("to_review"));
+        String newName = "ToReview";
+        String newSlug = "to_review";
+        updateDTO.setName(JsonNullable.of(newName));
+        updateDTO.setSlug(JsonNullable.of(newSlug));
 
         var request = put("/api/task_statuses/{id}", taskStatus.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -146,8 +149,12 @@ public class TaskStatusControllerTest {
                 .andReturn();
         String body = result.getResponse().getContentAsString();
         TaskStatusDTO updatedStatus = om.readValue(body, TaskStatusDTO.class);
-        assertThat(updatedStatus.getName()).isEqualTo("ToReview");
-        assertThat(updatedStatus.getSlug()).isEqualTo("to_review");
+        Optional<TaskStatus> taskStatusOptional = taskStatusRepository.findById(taskStatus.getId());
+        assertThat(taskStatusOptional.get().getName()).isEqualTo(newName);
+        assertThat(taskStatusOptional.get().getSlug()).isEqualTo(newSlug);
+
+        assertThat(updatedStatus.getName()).isEqualTo(newName);
+        assertThat(updatedStatus.getSlug()).isEqualTo(newSlug);
     }
 
     @Test
